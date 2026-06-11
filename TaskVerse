@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskVerse Pro - Earn with Tasks & Referrals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1300px;
+            margin: auto;
+        }
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 50px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f5af19, #f12711);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .balance-box {
+            background: #f5af19;
+            color: #1a1a2e;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+        }
+        .btn {
+            background: #4CAF50;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-danger {
+            background: #f12711;
+        }
+        .btn-warning {
+            background: #f5af19;
+            color: #1a1a2e;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        .card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(5px);
+            border-radius: 28px;
+            padding: 22px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card h2 {
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        .task-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .task-btn {
+            background: #4CAF50;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        .task-btn.completed {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .refer-link {
+            background: #1a1a2e;
+            padding: 12px;
+            border-radius: 50px;
+            word-break: break-all;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 40px;
+            border: none;
+            background: #1a1a2e;
+            color: white;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        a {
+            color: #f5af19;
+            text-decoration: none;
+        }
+        @media (max-width: 800px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="logo">💰 TaskVerse Pro</div>
+        <div class="balance-box">💰 Balance: $<span id="userBalance">0.00</span></div>
+        <div>
+            <button class="btn" id="resetAccountBtn" style="background:#555;">Reset</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="grid-2">
+        <!-- Left Column: Tasks -->
+        <div>
+            <div class="card">
+                <h2>📋 Complete Tasks & Earn</h2>
+                <div id="tasksContainer"></div>
+            </div>
+            <div class="card">
+                <h2>🤖 AI Assistant (Smart Chat)</h2>
+                <p style="font-size:14px; margin-bottom:10px;">Ask anything - AI will answer (simulated, no API key needed)</p>
+                <input type="text" id="aiQuestion" placeholder="e.g., What is Bitcoin?">
+                <button id="askAiBtn" class="btn">Ask AI</button>
+                <div id="aiAnswer" style="margin-top:15px; background:#1a1a2e; padding:12px; border-radius:20px; min-height:60px;"></div>
+            </div>
+        </div>
+
+        <!-- Right Column: Referral & Withdraw -->
+        <div>
+            <div class="card">
+                <h2>👥 Referral System</h2>
+                <p><strong>Rule:</strong> You need <span style="color:#f5af19;">3 referrals</span> to withdraw money!</p>
+                <div class="refer-link" id="referralLinkText">Loading...</div>
+                <button id="copyRefBtn" class="btn-warning btn">📋 Copy Referral Link</button>
+                <p style="margin-top:15px;">✅ Referrals Done: <strong id="referralCount">0</strong> / 3</p>
+                <p>👥 People who joined via you:</p>
+                <ul id="referralList"></ul>
+            </div>
+            <div class="card">
+                <h2>💸 Withdraw Money</h2>
+                <p>Min $10 | EasyPaisa / JazzCash</p>
+                <input type="text" id="withdrawNumber" placeholder="EasyPaisa / JazzCash Number">
+                <input type="number" id="withdrawAmount" placeholder="Amount in USD (min 10)">
+                <button id="withdrawBtn" class="btn-danger">Withdraw</button>
+                <p id="withdrawMessage" style="margin-top:10px; color:#f5af19;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Links -->
+    <footer>
+        <p>
+            <a href="#" id="showPrivacy">Privacy Policy</a> | 
+            <a href="#" id="showAbout">About Us</a> | 
+            <a href="#" id="showContact">Contact</a>
+        </p>
+        <p>© 2026 TaskVerse Pro - Google AdSense Ready | Earn Money Online Pakistan</p>
+    </footer>
+</div>
+
+<!-- Modal for Privacy/About/Contact -->
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:#1a1a2e; max-width:500px; width:90%; padding:25px; border-radius:30px;">
+        <h3 id="modalTitle">Title</h3>
+        <div id="modalBody">Content</div>
+        <button id="closeModal" style="margin-top:20px; background:#f12711; padding:8px 20px; border-radius:30px;">Close</button>
+    </div>
+</div>
+
+<script>
+    // ---------- USER SETUP ----------
+    let currentUserId = localStorage.getItem("taskverse_userId");
+    if (!currentUserId) {
+        currentUserId = "user_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+        localStorage.setItem("taskverse_userId", currentUserId);
+        // Initialize user data
+        localStorage.setItem(currentUserId + "_balance", "0");
+        localStorage.setItem(currentUserId + "_referrals", JSON.stringify([]));
+        localStorage.setItem(currentUserId + "_tasksDone", JSON.stringify([]));
+    }
+
+    // Helper functions
+    function getUserData() {
+        return {
+            balance: parseFloat(localStorage.getItem(currentUserId + "_balance")) || 0,
+            referrals: JSON.parse(localStorage.getItem(currentUserId + "_referrals")) || [],
+            tasksDone: JSON.parse(localStorage.getItem(currentUserId + "_tasksDone")) || []
+        };
+    }
+
+    function saveUserData(balance, referrals, tasksDone) {
+        localStorage.setItem(currentUserId + "_balance", balance);
+        localStorage.setItem(currentUserId + "_referrals", JSON.stringify(referrals));
+        localStorage.setItem(currentUserId + "_tasksDone", JSON.stringify(tasksDone));
+        updateUI();
+    }
+
+    function updateUI() {
+        let data = getUserData();
+        document.getElementById("userBalance").innerText = data.balance.toFixed(2);
+        document.getElementById("referralCount").innerText = data.referrals.length;
+        
+        // Update referral list
+        let list = document.getElementById("referralList");
+        list.innerHTML = "";
+        if (data.referrals.length === 0) {
+            list.innerHTML = "<li style='color:#aaa;'>No referrals yet</li>";
+        } else {
+            data.referrals.forEach(ref => {
+                let li = document.createElement("li");
+                li.innerText = ref.substring(0, 15) + "...";
+                list.appendChild(li);
+            });
+        }
+        
+        // Withdraw button enable/disable
+        let withdrawBtn = document.getElementById("withdrawBtn");
+        if (data.referrals.length >= 3) {
+            withdrawBtn.disabled = false;
+            withdrawBtn.style.opacity = "1";
+        } else {
+            withdrawBtn.disabled = true;
+            withdrawBtn.style.opacity = "0.5";
+        }
+    }
+
+    // ---------- TASKS ----------
+    const tasksList = [
+        { id: "video1", name: "🎥 Watch YouTube Video (30 sec)", type: "video", link: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", reward: 0.50 },
+        { id: "quiz1", name: "❓ Quiz: What is 10+5? (Answer: 15)", type: "quiz", answer: "15", reward: 0.30 },
+        { id: "read1", name: "📖 Read Privacy Policy (Click below)", type: "read", reward: 0.20 },
+        { id: "ai1", name: "🤖 Ask AI one question (use AI box)", type: "ai", reward: 0.25 }
+    ];
+
+    function loadTasks() {
+        let data = getUserData();
+        let tasksDone = data.tasksDone;
+        let container = document.getElementById("tasksContainer");
+        container.innerHTML = "";
+        
+        tasksList.forEach(task => {
+            let isCompleted = tasksDone.includes(task.id);
+            let btnHtml = "";
+            if (isCompleted) {
+                btnHtml = `<button class="task-btn completed" disabled>✅ Completed</button>`;
+            } else {
+                btnHtml = `<button class="task-btn" onclick='startTask("${task.id}", ${task.reward}, "${task.type}", "${task.answer || ""}", "${task.link || ""}")'>Earn $${task.reward}</button>`;
+            }
+            container.innerHTML += `
+                <div class="task-item">
+                    <span><strong>${task.name}</strong></span>
+                    ${btnHtml}
+                </div>
+            `;
+        });
+    }
+
+    window.startTask = function(taskId, reward, type, answer, link) {
+        let data = getUserData();
+        if (data.tasksDone.includes(taskId)) {
+            alert("You already completed this task!");
+            return;
+        }
+        
+        if (type === "video") {
+            window.open(link, "_blank");
+            alert("Watch the video for 30 seconds. Task will auto-complete.");
+            setTimeout(() => {
+                completeTask(taskId, reward);
+            }, 30000);
+        } 
+        else if (type === "quiz") {
+            let userAns = prompt("Enter your answer:");
+            if (userAns && userAns.trim() === answer) {
+                completeTask(taskId, reward);
+            } else {
+                alert("Wrong answer! Try again.");
+            }
+        }
+        else if (type === "read") {
+            // Show privacy modal
+            showPrivacyModal();
+            setTimeout(() => {
+                let confirmRead = confirm("Have you read the Privacy Policy? Click OK to earn reward.");
+                if (confirmRead) completeTask(taskId, reward);
+            }, 2000);
+        }
+        else if (type === "ai") {
+            alert("Go to the AI Assistant box on the right, type a question and click 'Ask AI'. Then come back and click OK.");
+            window.pendingAITask = { id: taskId, reward: reward };
+        }
+    };
+
+    function completeTask(taskId, reward) {
+        let data = getUserData();
+        if (data.tasksDone.includes(taskId)) return;
+        data.tasksDone.push(taskId);
+        data.balance += reward;
+        saveUserData(data.balance, data.referrals, data.tasksDone);
+        alert(`✅ Task Completed! You earned $${reward.toFixed(2)}`);
+        loadTasks();
+    }
+
+    // ---------- AI Assistant (Simulated ChatGPT) ----------
+    document.getElementById("askAiBtn").addEventListener("click", function() {
+        let question = document.getElementById("aiQuestion").value.trim();
+        if (!question) {
+            alert("Please type a question first!");
+            return;
+        }
+        
+        // Simulated AI response
+        let responses = [
+            "That's a great question! The answer depends on many factors...",
+            "According to AI, " + question + " is an interesting topic. Here's what you should know: stay curious!",
+            "I think you're asking about " + question.substring(0, 30) + "... That's a smart thing to learn.",
+            "As a helpful AI, I'd say: Keep learning and earning on TaskVerse!"
+        ];
+        let randomReply = responses[Math.floor(Math.random() * responses.length)];
+        document.getElementById("aiAnswer").innerHTML = "🤖 <strong>AI:</strong> " + randomReply;
+        
+        // Check if AI task is pending
+        if (window.pendingAITask) {
+            completeTask(window.pendingAITask.id, window.pendingAITask.reward);
+            delete window.pendingAITask;
+        }
+    });
+
+    // ---------- REFERRAL SYSTEM ----------
+    function updateReferralLink() {
+        let link = window.location.href.split('?')[0] + "?ref=" + currentUserId;
+        document.getElementById("referralLinkText").innerText = link;
+    }
+    
+    // Check if user came via referral link
+    function checkReferral() {
+        let urlParams = new URLSearchParams(window.location.search);
+        let referrerId = urlParams.get("ref");
+        if (referrerId && referrerId !== currentUserId) {
+            let referrerData = JSON.parse(localStorage.getItem(referrerId + "_referrals")) || [];
+            if (!referrerData.includes(currentUserId)) {
+                referrerData.push(currentUserId);
+                localStorage.setItem(referrerId + "_referrals", JSON.stringify(referrerData));
+                // Add bonus to referrer
+                let referrerBalance = parseFloat(localStorage.getItem(referrerId + "_balance")) || 0;
+                referrerBalance += 1.00;
+                localStorage.setItem(referrerId + "_balance", referrerBalance);
+                alert("🎉 Referral successful! Your referrer got $1 bonus. You also get started!");
+            }
+            // Remove ref from URL to avoid re-triggering
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+    
+    document.getElementById("copyRefBtn").addEventListener("click", function() {
+        let link = window.location.href.split('?')[0] + "?ref=" + currentUserId;
+        navigator.clipboard.writeText(link);
+        alert("✅ Referral link copied! Share with 3 friends to unlock withdrawals.");
+    });
+
+    // ---------- WITHDRAW ----------
+    document.getElementById("withdrawBtn").addEventListener("click", function() {
+        let data = getUserData();
+        if (data.referrals.length < 3) {
+            document.getElementById("withdrawMessage").innerText = "❌ You need 3 referrals before withdrawing!";
+            return;
+        }
+        let amount = parseFloat(document.getElementById("withdrawAmount").value);
+        let number = document.getElementById("withdrawNumber").value.trim();
+        if (isNaN(amount) || amount < 10) {
+            document.getElementById("withdrawMessage").innerText = "❌ Minimum withdrawal is $10";
+            return;
+        }
+        if (amount > data.balance) {
+            document.getElementById("withdrawMessage").innerText = "❌ Insufficient balance!";
+            return;
+        }
+        if (!number) {
+            document.getElementById("withdrawMessage").innerText = "❌ Enter EasyPaisa/JazzCash number";
+            return;
+        }
+        
+        // Process withdrawal
+        let newBalance = data.balance - amount;
+        saveUserData(newBalance, data.referrals, data.tasksDone);
+        document.getElementById("withdrawMessage").innerHTML = `✅ Withdrawal request sent! $${amount} to ${number}. Will be processed within 48 hours.`;
+        document.getElementById("withdrawAmount").value = "";
+        document.getElementById("withdrawNumber").value = "";
+    });
+
+    // ---------- MODALS (Privacy, About, Contact) ----------
+    function showPrivacyModal() {
+        document.getElementById("modalTitle").innerText = "📜 Privacy Policy";
+        document.getElementById("modalBody").innerHTML = `
+            <p><strong>TaskVerse Pro - Strong Privacy Policy</strong></p>
+            <p>✅ We collect: Email (if provided), task completion, referral data.</p>
+            <p>✅ We use LocalStorage only. No data sold to third parties.</p>
+            <p>✅ Google AdSense compliant: No misleading ads, no adult content.</p>
+            <p>✅ You can reset your account anytime using Reset button.</p>
+            <p>✅ For data deletion, contact: privacy@taskverse.com</p>
+            <p><strong>GDPR & CCPA Ready</strong></p>
+        `;
+        document.getElementById("modal").style.display = "flex";
+    }
+    
+    function showAboutModal() {
+        document.getElementById("modalTitle").innerText = "ℹ️ About TaskVerse Pro";
+        document.getElementById("modalBody").innerHTML = `
+            <p>TaskVerse Pro is a micro-task earning platform for Pakistani users.</p>
+            <p>Complete tasks, watch videos, answer quizzes, refer friends, and withdraw via EasyPaisa/JazzCash.</p>
+            <p>Built with 💙 in 2026. Powered by AI & smart referrals.</p>
+            <p><strong>Mission:</strong> Help everyone earn online easily.</p>
+        `;
+        document.getElementById("modal").style.display = "flex";
+    }
+    
+    function showContactModal() {
+        document.getElementById("modalTitle").innerText = "📞 Contact Us";
+        document.getElementById("modalBody").innerHTML = `
+            <p>Email: support@taskverse.com</p>
+            <p>WhatsApp: +92 300 1234567</p>
+            <p>Facebook: /taskverse</p>
+            <p>Response time: 24-48 hours</p>
+        `;
+        document.getElementById("modal").style.display = "flex";
+    }
+    
+    document.getElementById("showPrivacy").addEventListener("click", (e) => { e.preventDefault(); showPrivacyModal(); });
+    document.getElementById("showAbout").addEventListener("click", (e) => { e.preventDefault(); showAboutModal(); });
+    document.getElementById("showContact").addEventListener("click", (e) => { e.preventDefault(); showContactModal(); });
+    document.getElementById("closeModal").addEventListener("click", () => {
+        document.getElementById("modal").style.display = "none";
+    });
+    
+    // Reset Account
+    document.getElementById("resetAccountBtn").addEventListener("click", function() {
+        if (confirm("⚠️ WARNING: This will delete all your data (balance, tasks, referrals). Are you sure?")) {
+            localStorage.removeItem(currentUserId + "_balance");
+            localStorage.removeItem(currentUserId + "_referrals");
+            localStorage.removeItem(currentUserId + "_tasksDone");
+            // Create fresh
+            localStorage.setItem(currentUserId + "_balance", "0");
+            localStorage.setItem(currentUserId + "_referrals", JSON.stringify([]));
+            localStorage.setItem(currentUserId + "_tasksDone", JSON.stringify([]));
+            updateUI();
+            loadTasks();
+            alert("Account reset! You start fresh.");
+        }
+    }
